@@ -40,10 +40,10 @@ const register = async(req, res) => {
 */
 const login = async(req,res) => {
     try {
+        console.log(req.body)
+        
         const {identifier, password} = req.body;
-
-        console.log(identifier);
-
+        
         let user = await db.query(`SELECT email, username, password FROM user WHERE email = "${identifier}" OR username ="${identifier}";`);
         user = user[0][0]
        
@@ -56,11 +56,14 @@ const login = async(req,res) => {
 
         const access_token = create_access_jwt(user.username, user.email, "user");
         const refresh_token = create_refresh_jwt(user.username, user.email, "user");
-    
-
-        return res.status(201)
-        .cookie('refresh_token', refresh_token, {httpOnly:true})
-        .cookie('Authorization', access_token)
+        
+        console.log(`[${log_date_now()} ] user ${user.username} logged in.`)
+       
+        
+        return res.status(200)
+        .cookie('refresh_token', refresh_token, { httpOnly:true,sameSite:"none",domain:'http://localhost:5173', maxAge: 30 * 1000 * 60})
+        .cookie('authorization', access_token, { httpOnly:true,sameSite:"none",domain:'http://localhost:5173', maxAge: 1 * 1000 * 60 * 60 *24})
+        .cookie('didy', "woop", { httpOnly:true})
         .json({"status":"success"});
         
     } catch (error) {

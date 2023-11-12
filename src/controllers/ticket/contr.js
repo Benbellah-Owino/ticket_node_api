@@ -133,6 +133,14 @@ const confirm = async(req, res)=>{
     }
 }
 
+/** 
+  * Get one ticket
+  * @param {request}  req  - The request object
+  * @param {response} res  - The response object
+  * @returns {response} A response object
+  * @path /ticket/get_one
+  * @method GET
+*/
 const get_ticket = async (req, res)=>{
     try {
         if(!req.user){
@@ -150,6 +158,14 @@ const get_ticket = async (req, res)=>{
     }
 }
 
+/** 
+  * Get one ticket
+  * @param {request}  req  - The request object
+  * @param {response} res  - The response object
+  * @returns {response} A response object
+  * @path /ticket/get_all
+  * @method GET
+*/
 const get_all_event_tickets = async(req, res)=>{
     try {
         if(!req.user){
@@ -169,35 +185,51 @@ const get_all_event_tickets = async(req, res)=>{
 
         let tickets = await db.query(`SELECT * FROM ticket WHERE event = ${event_id} ORDER_BY = status`);
 
-        return res.status(200).json({"status":"pass", "tickets":tickets});
+        return res.status(200).json({"status":"pass", "tickets":tickets[0]});
     } catch (error) {
-        
+        console.error(`[${log_date_now()}] controllers > ticket > contr.js > get_all_event_tickets:-> ${error}`)
+        return res.status(500).json({"status":"fail"});
     }
 }
 
-//TODO: Finish this controller
+/** 
+  * Get all tickets for a user 
+  * @param {request}  req  - The request object
+  * @param {response} res  - The response object
+  * @returns {response} A response object
+  * @path /ticket/get_my
+  * @method GET
+*/
 const get_my_tickets = async(req, res)=>{
     try {
         if(!req.user){
             return res.status(401).json({"status":"failed"});
         }
         const {email,role} = req.user;
-        const {ticket_id, event_id} = req.body
+       
         if(role != "user"){
             return res.status(403).json({"status":"failed"});
         }
-        let event = await db.query(`SELECT name, status, organizer.email FROM ${event_id} FETCH organizer;`);
-        event = event[0][0];
-        console.log(event);
-        if(event.organizer.email !== email){
+        let user = await db.query(`SELECT id, email FROM user WHERE email = "${email}";`)
+        user = user[0][0]
+        console.log(user)
+        if(!user && user.email != email){
             return res.status(403).json({"status":"fail"});
         }
+        let tickets = await db.query(`SELECT * FROM ticket   WHERE user=${user.id} ;`);
+
+        return res.status(200).json({"tickets":tickets[0], "no_tickets":tickets[0].length})
+
     } catch (error) {
-        
+        console.error(`[${log_date_now()}] controllers > ticket > contr.js > get_my_ticket:-> ${error}`)
+        return res.status(500).json({"status":"fail"});
     }
 }
 module.exports = {
     create,
     return_ticket,
-    confirm
+    confirm,
+    get_all_event_tickets,
+    get_my_tickets,
+    get_ticket
 }

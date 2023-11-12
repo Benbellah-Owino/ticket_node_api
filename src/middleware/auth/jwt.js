@@ -9,7 +9,6 @@ const log_date_now = require("../helper_functions/date")
   * @returns {JsonWebToken} the refresh token
 */
 const create_refresh_jwt = (username, email, role) => {
-    console.log(process.env.REFRESH_TIME)
     return jwt.sign({username, email, role}, process.env.REFRESH_TOKEN_SECRET, {expiresIn : process.env.REFRESH_TIME*60*60*24})
 }
 
@@ -22,7 +21,6 @@ const create_refresh_jwt = (username, email, role) => {
   * @returns {JsonWebToken} the access token
 */
 const create_access_jwt = (username, email, role) => {
-    console.log(process.env.ACCESS_TIME)
     return jwt.sign({username, email, role}, process.env.ACCESS_TOKEN_SECRET, {expiresIn : process.env.ACCESS_TIME*60*30})
 }
 
