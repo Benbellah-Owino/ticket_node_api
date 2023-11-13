@@ -71,7 +71,18 @@ const cancel= async(req, res)=>{
     }
 }
 
+const get_all = async(req,res)=>{
+    try {
+        let events = await db.query(`SELECT * FROM event WHERE status="AVAILABLE"`);
+        console.log(events[0])
+    return res.status(200).json({"events":events[0]})
+    } catch (error) {
+        console.error(`[${log_date_now()} ] controllers > event > contr.js > get_all:-> ${error}`)
+        res.status(500).json({"status":"fail"})
+    }
+}
 module.exports = {
     create,
     cancel,
+    get_all
 }

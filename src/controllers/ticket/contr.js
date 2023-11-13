@@ -149,9 +149,9 @@ const get_ticket = async (req, res)=>{
         const {email,role} = req.user;
         const {ticket_id} = req.body;
 
-        let ticket = await db.query(`SELECT * FROM ${ticket_id};`);
+        let ticket = await db.query(`SELECT id, price, type ,time_issued, status, user.wallet,user.email,event.description, event.venue, event.opening, event.closing, event.hour_range, event.status  FROM ${ticket_id} FETCH event, user;`);
         
-        return res.status(200).json({"status":"pass", "ticket":ticket[0]})
+        return res.status(200).json({"status":"pass", "ticket":ticket})
     } catch (error) {
         console.error(`[${log_date_now()}] controllers > ticket > contr.js > get_ticket:-> ${error}`)
         return res.status(500).json({"status":"fail"});
@@ -183,7 +183,7 @@ const get_all_event_tickets = async(req, res)=>{
             return res.status(403).json({"status":"fail"});
         }
 
-        let tickets = await db.query(`SELECT * FROM ticket WHERE event = ${event_id} ORDER_BY = status`);
+        let tickets = await db.query(`SELECT id, price, type ,time_issued,status, user.wallet, user.email, event.description, event.venue, event.opening, event.closing, event.hour_range, event.status  FROM ticket  WHERE event = ${event_id} ORDER BY status FETCH event, user`);
 
         return res.status(200).json({"status":"pass", "tickets":tickets[0]});
     } catch (error) {
@@ -216,7 +216,7 @@ const get_my_tickets = async(req, res)=>{
         if(!user && user.email != email){
             return res.status(403).json({"status":"fail"});
         }
-        let tickets = await db.query(`SELECT * FROM ticket   WHERE user=${user.id} ;`);
+        let tickets = await db.query(`SELECT id, price, type ,time_issued,status , user.wallet, user.email,event.description , event.venue, event.opening, event.closing, event.hour_range, event.status  FROM ticket WHERE user = ${user.id} ORDER BY status FETCH event,user ;`);
 
         return res.status(200).json({"tickets":tickets[0], "no_tickets":tickets[0].length})
 

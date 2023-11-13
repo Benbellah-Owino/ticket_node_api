@@ -4,6 +4,10 @@ const app = express();
 //import database
 const db = require("./db/connectdb.js");
 
+//import passport
+const LocalStrategy = require('passport-local');
+const passport = require('passport');
+const bodyParser = require('body-parser');
 //import routes
 const admin_routes = require("./routes/admin/route");
 const organizer_routes = require("./routes/organizer/route"); 
@@ -19,17 +23,22 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({extended:true}))
 
-app.use(cors({credentials:true, origin:true}))
-// app.use(cors({
-   
-// }))
+
+app.use(cors({credentials:true,
+    origin:['http://localhost:5173/','http://192.168.56.1:5173/', 'http://192.168.100.2:5173/', 'http://localhost:5173','http://192.168.56.1:5173', 'http://192.168.100.2:5173']
+}))
+
 app.use(function(req, res, next){
-    res.header('Access-Control-Allow-Origin', '*')
+    
     res.header("Access-Control-Allow-Credentials", true);
     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
     res.header("Access-Control-Allow-Headers", 'Origin,X-Requested-With,Content-Type,Accept,content-type,application/json');
     next();
 })
+
+// require('./middleware/auth/passport_auth.js')()
+
+// passport.use(new LocalStrategy())
 
 //section:     ---use routes
 app.use("/api/v1/admin", admin_routes);
@@ -63,7 +72,7 @@ app.get("/test_db",async(req,res)=>{
     }
 })
 //192.168.100.11
-app.listen(3000,(req,res)=>{
+app.listen(3000,'192.168.100.11',(req,res)=>{
     console.log(process.env.TEST)
     console.log(`Listening at port 3000...`)
 })

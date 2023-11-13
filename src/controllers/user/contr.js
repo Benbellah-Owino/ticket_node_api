@@ -43,6 +43,8 @@ const login = async(req,res) => {
         console.log(req.body)
         
         const {identifier, password} = req.body;
+        const origin = req.get('Origin');
+        console.log(`Req origin: ${origin}`)
         
         let user = await db.query(`SELECT email, username, password FROM user WHERE email = "${identifier}" OR username ="${identifier}";`);
         user = user[0][0]
@@ -61,10 +63,10 @@ const login = async(req,res) => {
        
         
         return res.status(200)
-        .cookie('refresh_token', refresh_token, { httpOnly:true,sameSite:"none",domain:'http://localhost:5173', maxAge: 30 * 1000 * 60})
-        .cookie('authorization', access_token, { httpOnly:true,sameSite:"none",domain:'http://localhost:5173', maxAge: 1 * 1000 * 60 * 60 *24})
-        .cookie('didy', "woop", { httpOnly:true})
-        .json({"status":"success"});
+        .cookie('refresh_token', refresh_token, { sameSite:"None",secure:false,domain:`${origin}`, maxAge: 30 * 1000 * 60})
+        .cookie('authorization', access_token, { sameSite:"None",secure:false,domain:`${origin}`, maxAge: 1 * 1000 * 60 * 60 *24})
+        .cookie('didy', "woop", { sameSite:"None",domain:origin,secure:false,})
+        .json({"status":"success", "token":access_token});
         
     } catch (error) {
         console.error(`[${log_date_now()} ] controllers > event > contr.js > login:-> ${error}`)
