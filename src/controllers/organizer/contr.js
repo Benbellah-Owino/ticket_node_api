@@ -44,34 +44,40 @@ const register = async(req, res) => {
   * @method POST
 */
 const login = async(req,res) => {
+    let auth_error = false
     try {
-        const {identifier, password} = req.body;
-
-        console.log(identifier);
-
+        const {identifier, password} = req.body;    
+        const origin = req.get('Origin');
+        console.log(`Req origin: ${origin}`)
+     
         let organizer = await db.query(`SELECT email, username, password FROM organizer WHERE email = "${identifier}" OR username ="${identifier}";`);
         organizer = organizer[0][0];
         console.log(organizer)
-       
     
         const authorized = await Bcrypt.compare(password, organizer.password);
 
         if(!authorized){
-            return res.json(401).json({"status":"fail"});
+            console.log("unauth-> "+authorized)
+            auth_error = true
+            return res.json(401).json({"msg":"unauth","status":"fail"});
         }
-
+        console.log("fire")
         const access_token = create_access_jwt(organizer.username, organizer.email, "organizer");
         const refresh_token = create_refresh_jwt(organizer.username, organizer.email, "organizer");
-    
+        
+        console.log(`[${log_date_now()} ] user ${organizer.username} logged in.`)
         //TODO: Save refresh token securely
-        return res.status(201)
-        .cookie('refresh_token', refresh_token, {httpOnly:true})
-        .cookie('Authorization', access_token,{httpOnly:true})
-        .json({"status":"success"});
+        return res.status(200)
+        .cookie('refresh_token', refresh_token, { sameSite:"None",secure:false,domain:`${origin}`, maxAge: 30 * 1000 * 60})
+        .cookie('authorization', access_token, { sameSite:"None",secure:false,domain:`${origin}`, maxAge: 1 * 1000 * 60 * 60 *24})
+        .json({"status":"success", "token":access_token});
         
     } catch (error) {
-        console.error(`[${log_date_now()}] controllers > organizer > contr.js > register:-> ${error}`)
-        res.status(500).json({"status":"fail"})
+        
+        console.error(`[${log_date_now()}] controllers > organizer > contr.js > login:-> ${error}`)
+       if(auth_error == false){
+        return res.status(500).json({"status":"fail"})
+       }
     }
 }
 

@@ -13,20 +13,22 @@ const log_date_now = require("../../middleware/helper_functions/date")
 const register = async(req, res) => {
     try {
         const body = req.body;
-        let email_exists = await check_user_in_db(body.email,body.username,res);
+        console.log(body);
+        let email_exists = check_user_in_db(body.email,body.username,'user',res);
         if(email_exists==true){
             console.log("hit")
             return res.status(409).json({"status":"fail"});
         }
 
         let user = await db.create('user', body);
+        console.log(user)
 
         if(user){
             return res.status(201).json({"status":"success"});
         }
        
     } catch (error) {
-        console.error(`[${log_date_now()} ] controllers > user > contr.js > register:-> ${error}`)
+        console.error(`[${log_date_now()}] controllers > organizer > contr.js > user:-> ${error}`);
         res.status(500).json({"status":"fail"})
     }
 }
@@ -39,6 +41,7 @@ const register = async(req, res) => {
   * @path /user/api/login
 */
 const login = async(req,res) => {
+    let auth_error = false
     try {
         console.log(req.body)
         
@@ -53,6 +56,7 @@ const login = async(req,res) => {
         const authorized = await Bcrypt.compare(password, user.password);
 
         if(!authorized){
+            auth_error = true
             return res.json(401).json({"status":"fail"});
         }
 
@@ -70,7 +74,9 @@ const login = async(req,res) => {
         
     } catch (error) {
         console.error(`[${log_date_now()} ] controllers > event > contr.js > login:-> ${error}`)
-        res.status(500).json({"status":"fail"})
+        if(auth_error == false){
+            return res.status(500).json({"status":"fail"})
+           }
     }
 }
 

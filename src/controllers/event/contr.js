@@ -27,6 +27,7 @@ const create = async(req, res)=>{
         }
 
         let event_request = req.body
+        event_request.organizer = organizer.id
         let event = await db.create('event', event_request);
         console.log(event);
         res.json({"status":"success"})
@@ -81,6 +82,7 @@ const get_all = async(req,res)=>{
         res.status(500).json({"status":"fail"})
     }
 }
+
 module.exports = {
     create,
     cancel,

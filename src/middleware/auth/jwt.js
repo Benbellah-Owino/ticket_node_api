@@ -35,7 +35,7 @@ const verify_user = (req, res, next) => {
     try {
       const token = req.headers['authtoken'];
       console.log(token+"\n")
-      console.log(req.headers)
+     
       if (!token){
         res.status(401).json({"status":"fail"});
       }
